@@ -21,17 +21,17 @@ on:
 jobs:
   build-flatpak:
     name: Build Flatpak Repository
-    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
 
     # Use Freedesktop runtime container
     container:
       image: ghcr.io/andyholmes/flatter/freedesktop:24.08
       options: --privileged
 
-    # Support multiple architectures if needed
+    # aarch64 is disabled for now; re-add it to the matrix and use 'ubuntu-24.04-arm' as runner to enable it
     strategy:
       matrix:
-        arch: [x86_64, aarch64]
+        arch: [x86_64]
       fail-fast: false
       max-parallel: 1  # Prevent conflicts when using shared repository cache
 
@@ -42,13 +42,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     # Setup GPG signing for the repository
     - name: Setup GPG
       if: ${{ github.event_name != 'pull_request' && vars.ENABLE_GPG_SIGNING == 'true' }}
       id: gpg
-      uses: crazy-max/ghaction-import-gpg@v6
+      uses: crazy-max/ghaction-import-gpg@v7
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}

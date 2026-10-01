@@ -17,13 +17,14 @@ jobs:
       needs_update: ${{ steps.version-check.outputs.needs_update }}
       new_version: ${{ steps.version-check.outputs.new_version }}
       current_version: ${{ steps.version-check.outputs.current_version }}
+      latest_version: ${{ steps.version-check.outputs.latest_version }}
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
 
@@ -55,7 +56,7 @@ jobs:
                 response.raise_for_status()
 
                 # Look for download links with version patterns
-                version_pattern = r'linuxx64-(\d+\.\d+\.\d+\.\d+)\.tar\.gz'
+                version_pattern = r'linuxx64[\w-]*?-(\d+\.\d+\.\d+\.\d+)\.tar\.gz'
                 matches = re.findall(version_pattern, response.text)
 
                 if matches:
@@ -155,7 +156,7 @@ jobs:
 
     - name: Create Pull Request
       if: steps.version-check.outputs.needs_update == 'true' && steps.version-check.outputs.update_success == 'true'
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v8
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: 'chore: update Citrix ICA Client to version ${{ steps.version-check.outputs.new_version }}'
@@ -186,7 +187,7 @@ jobs:
 
     steps:
     - name: Trigger Repository Build
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const workflow_id = 'build-flatpak-repo.yml';
@@ -203,7 +204,7 @@ jobs:
               }
             });
 
-            console.log(`Triggered repository rebuild for version ${context.payload.inputs.new_version || 'latest'}`);
+            console.log(`Triggered repository rebuild for version ${{ needs.check-version.outputs.new_version }}`);
 
             // Add to step summary
             core.summary
