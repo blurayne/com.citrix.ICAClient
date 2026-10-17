@@ -8,6 +8,11 @@ fi
 # Add binaries to its path
 PATH=/app/ICAClient:$PATH
 
+# Use native Wayland for GTK in a Wayland session; keep X11 behavior otherwise. A caller-supplied GDK_BACKEND wins.
+if [[ -z "$GDK_BACKEND" && -n "$WAYLAND_DISPLAY" && "$XDG_SESSION_TYPE" != "x11" ]]; then
+    export GDK_BACKEND=wayland,x11
+fi
+
 # Start the Citrix logging service
 /app/ICAClient/util/ctxcwalogd
 
